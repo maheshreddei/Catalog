@@ -1,0 +1,176 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>OT Security Service</title><style>body{max-width:1120px;margin:2em auto;padding:0 1em;font:16px/1.6 system-ui;color:#173047}table{border-collapse:collapse}td,th{border:1px solid #ccd9e3;padding:.6em}a{color:#175fa9}</style><a href="index.html">Catalog home</a><h1 id="ot-soc-implementation-plan-for-management">OT SOC implementation plan for management</h1>
+<p>Prepared 2026-11-05. Scope: all 179 records in the updated OT Detection Catalog (81 OT-DC, 86 LS-OT, 12 LS-ENT). These records include overlapping predicates and service-assurance/posture workflows; they are not 179 independent production rules. Deployment and site validation remain unverified.</p>
+<h2 id="management-proposal">Management proposal</h2>
+<p>Approve a 90-day first-site pilot to establish reliable visibility, detect unauthorized access and changes, and prove that the SOC can explain an incident and coordinate a safe next action. Use the full catalog as the controlled backlog. Expand by customer/site readiness and operational consequence.</p>
+<p>The 90-day schedule and selected catalog entries are proposed delivery choices, not prescribed by NIST, CISA or IEC. Start engineering/SIS detections earlier where risk and supported telemetry justify it.</p>
+<h2 id="how-the-guidance-informs-the-plan">How the guidance informs the plan</h2>
+<table>
+<thead>
+<tr>
+<th>Guidance</th>
+<th>Published scope or recommendation</th>
+<th>Proposed application</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://nvlpubs.nist.gov/nistpubs/CSWP/NIST.CSWP.29.pdf">NIST CSF 2.0</a></td>
+<td>Six functions and Current/Target Profiles organize cybersecurity outcomes</td>
+<td>Record today's visibility and response gaps; define the target OT SOC capability, ownership and evidence</td>
+</tr>
+<tr>
+<td><a href="https://csrc.nist.gov/pubs/sp/800/82/r3/final">NIST SP 800-82 Rev. 3</a></td>
+<td>OT guidance accounts for safety, performance and reliability; network monitoring includes baselining and analysis</td>
+<td>Use operational context, approved collection and safe investigation; do not infer maliciousness from every anomaly</td>
+</tr>
+<tr>
+<td><a href="https://www.cyber.gov.au/publication/foundations-for-ot-cybersecurity-asset-inventory-guidance-for-owners-and-operators">CISA-led joint OT inventory guidance</a></td>
+<td>Develop and maintain inventory and taxonomy using asset function, criticality and dependencies</td>
+<td>Establish customer/site, asset roles, owners, protocols, criticality and connectivity before applying policy detections</td>
+</tr>
+<tr>
+<td><a href="https://www.cyber.gov.au/publication/best-practices-for-event-logging-and-threat-detection">CISA and partners: event logging guidance</a></td>
+<td>Establish logging policy, quality, centralized analysis and protected log storage</td>
+<td>Define sources, required fields, time handling, retention, access, ingestion health and investigation retrieval</td>
+</tr>
+<tr>
+<td><a href="https://webstore.iec.ch/en/publication/62883">IEC 62443-2-1:2024</a></td>
+<td>Asset-owner security program policy and procedures</td>
+<td>Customer retains operational accountability; document risk ownership, maintenance exceptions and incident decisions</td>
+</tr>
+<tr>
+<td><a href="https://webstore.iec.ch/en/publication/67631">IEC 62443-2-4:2023</a></td>
+<td>Service-provider security processes for integration and maintenance</td>
+<td>Assess applicability to contracted security service activities; define responsibilities, approved access and service changes</td>
+</tr>
+<tr>
+<td><a href="https://webstore.iec.ch/en/publication/30727">IEC 62443-3-2:2020</a></td>
+<td>Define the system, zones/conduits, assess risk and document security requirements</td>
+<td>Choose pilot boundaries and monitoring points according to consequential access paths</td>
+</tr>
+<tr>
+<td><a href="https://webstore.iec.ch/en/publication/7033">IEC 62443-3-3:2013</a></td>
+<td>Technical system requirements across seven foundational requirements</td>
+<td>Relate detection evidence to identity/use control, integrity, data-flow restrictions, timely response and availability</td>
+</tr>
+</tbody>
+</table>
+<p>This is a thematic alignment based on official public guidance and IEC descriptions/previews. It is not a clause-by-clause conformity assessment, certification, or claim of an achieved security level. Such assessment requires the applicable full standards, defined scope and implementation evidence. MITRE ATT&amp;CK supplies behavior traceability separately from these program/control objectives.</p>
+<h2 id="first-90-days">First 90 days</h2>
+<table>
+<thead>
+<tr>
+<th>Period</th>
+<th>Work</th>
+<th>Catalog scope</th>
+<th>Exit evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Days 1–15</td>
+<td>Define customer/site and critical process scope; assign owners; review architecture, assets, vendors and access paths; approve collection design and response authority</td>
+<td>Assess applicability for all 179; prioritize Stage 0</td>
+<td>Signed scope, initial Current/Target Profile, prioritized risks, asset/conduit map, RACI, collection and retention decisions</td>
+</tr>
+<tr>
+<td>Days 16–30</td>
+<td>Onboard required pilot logs; verify parsing and identity/asset joins; baseline relevant shifts, maintenance and operating modes</td>
+<td>OT-DC-071, 072, 074</td>
+<td>Evidence-health reports, timestamp uncertainty, tested alert delivery, approved access policy and documented gaps</td>
+</tr>
+<tr>
+<td>Days 31–60</td>
+<td>Implement and safely validate pilot predicates; operate in shadow and tune with customer operations</td>
+<td>Stage 1: 10 OT-DC + 12 LS-OT + 2 LS-ENT</td>
+<td>Versioned queries, positive/negative test evidence, preserved request/outcome semantics, tuning and analyst runbooks</td>
+</tr>
+<tr>
+<td>Days 61–90</td>
+<td>Exercise SOC-to-operations escalation, review shadow results, approve applicable cases and begin limited production</td>
+<td>Applicable Stage 1 cases; early 032/021 where ready</td>
+<td>Customer acceptance, measured workload/delay, coverage gaps, rollback plan and next-stage funding decision</td>
+</tr>
+</tbody>
+</table>
+<p>A date does not substitute for a readiness gate. Extend baselining if the pilot has not seen representative operating modes or maintenance. Validate via approved offline data, replay in a safe environment or existing records; no live exploitation, password testing or controller-command injection is authorized by this plan.</p>
+<h2 id="exactly-which-pilot-entries">Exactly which pilot entries</h2>
+<p>Stage 0: OT-DC-071 telemetry/parser health; OT-DC-072 clock integrity; OT-DC-074 escalation/evidence delivery.</p>
+<p>Stage 1 OT-DC: 001 external remote access; 002 internal remote pairing; 003 authentication attacks; 004 dormant/shared account use; 005 conduit bypass; 007 unauthorized device; 009 outbound connections; 012 weakened security policy; 013 scanning; 060 log tampering.</p>
+<p>Stage 1 LS-OT: T0859 D01–D08 (account-access predicates); T0886 D01–D02 (remote-access predicates); T0846 D01–D02 (device/port scanning). Full identifiers use the LS-OT- prefix, e.g. LS-OT-T0859-D01.</p>
+<p>Stage 1 LS-ENT: LS-ENT-T1110.001-D01 and D02 (guessing attempts and subsequent successful authentication).</p>
+<p>The 24 Stage 1 records require separate predicate acceptance evidence. Implementations may share processing and incidents may group related signals. Optional early engineering track: OT-DC-032 with LS-OT-T0843-D01/D02, and OT-DC-021 with LS-OT-T0858-D01/D02; assess their own source prerequisites before promotion.</p>
+<h2 id="what-must-be-provided">What must be provided</h2>
+<table>
+<thead>
+<tr>
+<th>Requirement</th>
+<th>Minimum deliverable</th>
+<th>Responsible role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Operational scope</td>
+<td>Named sites, critical processes, system boundaries, service hours, escalation authority and sector obligations</td>
+<td>Sponsor and customer OT owner</td>
+</tr>
+<tr>
+<td>Asset and access context</td>
+<td>Stable customer/site/asset IDs, roles, zones, conduits, NAT mapping, approved accounts, vendor windows and emergency access</td>
+<td>OT network/control engineering and IAM</td>
+</tr>
+<tr>
+<td>Pilot evidence</td>
+<td>Firewall, VPN/PAM, jump-host and target authentication, relevant identity/application/endpoint audit, passive inventory and SIEM/collector/ticket health</td>
+<td>Source owners and SOC platform engineer</td>
+</tr>
+<tr>
+<td>Secure collection</td>
+<td>Approved sensor/collector placement; controlled forwarding through appropriate boundaries; buffering, capacity, storage access and retention</td>
+<td>OT architect and SOC platform engineer</td>
+</tr>
+<tr>
+<td>Detection implementation</td>
+<td>Named SIEM dialect, versioned query, fields/joins, outcome semantics, policy inputs, exceptions, tests and rollback</td>
+<td>Detection engineer</td>
+</tr>
+<tr>
+<td>Analyst response</td>
+<td>Runbooks, evidence retrieval, severity criteria, OT on-call contacts, decision authority and handover exercise</td>
+<td>SOC lead, incident lead and customer operations</td>
+</tr>
+<tr>
+<td>Engineering expansion</td>
+<td>Programming/controller audit, approved projects, tag maps, maintenance/change records; SIS/process evidence as applicable</td>
+<td>Control/SIS/process engineers</td>
+</tr>
+<tr>
+<td>security service isolation</td>
+<td>Tenant-scoped joins, access controls, customer-specific policy and evidence storage/handling</td>
+<td>security service architect and service owner</td>
+</tr>
+</tbody>
+</table>
+<p>Inventory-listed sources are candidate sources, not proof of successful ingestion or field availability. Do not install unsupported agents on controllers or create unrestricted SOC-to-control access. Missing logs should become explicit coverage gaps.</p>
+<h2 id="staffing-and-budget-decision">Staffing and budget decision</h2>
+<p>Assign an accountable sponsor, SOC service lead, detection engineer, SIEM/data engineer, OT network/control-engineering counterpart and customer operations/on-call owner. Engage identity/endpoint, safety/process and incident-response specialists when applicable. These are required functions, not assumed full-time headcounts. Size staffed coverage from service hours, tenant/site count, measured alert workload, investigation time, leave and escalation obligations.</p>
+<p>Budget for approved passive visibility where absent, collectors, ingestion/storage/retention, engineering integration, safe validation capability, analyst training and operations participation. Estimate volume and cost from sampled source rates before committing to full ingestion. Define evidence residency, access and retention per customer contract and applicable requirements.</p>
+<h2 id="acceptance-and-management-measures">Acceptance and management measures</h2>
+<p>For every promoted predicate, require an accountable owner, evidenced required fields, attributable source/target and time, documented operational policy, safe tests of triggering and authorized-lookalike behavior, missing/delayed-event handling, tenant isolation, a runbook, escalation and customer acceptance.</p>
+<p>Report:</p>
+<ul>
+<li>Visibility: in-scope critical assets and sources actually observable, with measured evidence quality and gaps.</li>
+<li>Delivery: applicable / designed / implemented / offline-validated / shadow / customer-accepted / production counts, separately for catalog records and deployed rules.</li>
+<li>Quality: actionable-alert proportion, authorized-activity noise, investigation effort and ingest-to-alert delay; targets agreed from the baseline and customer consequence.</li>
+<li>Confidence: proportion of reviewed incidents with evidence for what/how/affected/next, missing observations and alternative explanations.</li>
+<li>Service: tested delivery/acknowledgment, escalation performance, evidence retrieval and outstanding readiness blockers.</li>
+</ul>
+<p>Do not use alerts generated, ATT&amp;CK mappings, or total catalog size as standalone success measures. Customer operations authorizes actions that may affect physical processes; initial automation can enrich, preserve evidence and route tickets within the agreed service scope.</p>
+<h2 id="expansion-after-the-pilot">Expansion after the pilot</h2>
+<p>Use <a href="./ot-full-catalog-roadmap.html">the full 179-entry roadmap</a> for Stages 2–5 and retain applicability decisions for every entry. Progress host/identity coverage, industrial protocols, engineering/SIS changes and process correlation as their dependencies become ready. For airports emphasize relevant facilities/baggage control; aviation/MRO needs an explicit facilities versus aircraft scope; petrochemical needs DCS/SIS and permit context; gas distribution needs remote-station availability and actual deployed SCADA protocols.</p>
+<p>Maintain a shared detection core plus sector context and customer/site policy. Validate one representative site per sector before broad scaling. Stage 6 is sustained service review, revalidation after changes and controlled improvement.</p>
+<p>Known backlog blockers: LS-OT-T0836-D04 lacks supplied logic; OT-DC-073 and OT-DC-074 lack current inventory source-ID associations. These gaps remain visible and are not treated as production coverage.</p>
+<h2 id="management-approval-requested">Management approval requested</h2>
+<p>Approve the pilot site and scope, named owners and operations participation, collection/data budget, validation resources, service hours and escalation authority, and production acceptance criteria. At Day 90 decide on evidence: promote ready detections, remediate gaps, and authorize the next sector/site wave.</p>
+</html>
