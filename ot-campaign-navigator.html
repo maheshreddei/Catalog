@@ -1,0 +1,726 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OT Campaign Navigator</title>
+<style>
+:root{color-scheme:dark;--bg:#0e141a;--panel:#151e28;--line:#293746;--ink:#f3f6fa;--muted:#aabccf;--hot:#ff7549;--cyan:#59d8e6}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,sans-serif}main{max-width:1920px;margin:auto;padding:12px}header,.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}header,.bar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}h1,h2,h3,p{margin:0}h1{font-size:23px}h2{font-size:21px}h3{font-size:15px}small,.muted{color:var(--muted)}a{color:var(--cyan)}button{font:inherit;color:inherit;cursor:pointer}button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}button:disabled{opacity:.45;cursor:default}.btn{border:1px solid var(--line);background:var(--bg);border-radius:7px;padding:5px 11px}.cards{display:grid;grid-template-columns:repeat(9,minmax(150px,1fr));gap:10px;overflow-x:auto;padding:4px 3px 8px;margin-bottom:10px}.card{display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;padding:12px;background:var(--panel);border:1px solid var(--line);border-radius:10px}.card[aria-pressed=true],.step.active{background:#381f17;border-color:var(--hot)}.card[aria-pressed=true]{box-shadow:inset 0 3px var(--hot)}.card .bar{width:100%;font:12px ui-monospace,monospace}.badge{color:#ffab90;background:#3a251e;border:1px solid #754431;border-radius:5px;padding:1px 6px;font-size:12px}.eyebrow{color:var(--hot);font:700 13px ui-monospace,monospace;letter-spacing:.08em}.meta{display:flex;flex-wrap:wrap;gap:6px 14px;margin:8px 0;color:var(--muted);font-size:13px}.meta strong{color:var(--ink)}.sequence{display:flex;overflow-x:auto;gap:18px;padding:12px 3px}.step{position:relative;flex:1 0 165px;min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:9px}.step+.step:before{content:'›';position:absolute;left:-16px;top:6px;color:var(--muted);font-size:23px}.step.future{opacity:.57}.step.outcome{flex-grow:1.8;min-width:230px}.items{display:grid;gap:6px}.outcome .items{grid-template-columns:repeat(auto-fit,minmax(105px,1fr))}.item{font-size:12px}.item b{display:block}.step .pick{border:0;background:transparent;padding:0;display:flex;align-items:center;gap:6px;margin-bottom:5px;font-size:12px}.num{background:var(--hot);color:#17100c;font-weight:800;border-radius:50%;display:grid;place-items:center;width:23px;height:23px}.tool-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:10px}.tool-grid>div{border:1px solid var(--line);border-radius:8px;padding:10px}.tool-grid ul{margin:4px 0;padding-left:19px}.status{margin-top:3px;color:var(--muted)}@media(max-width:700px){.tool-grid{grid-template-columns:1fr}.card{min-height:132px}}
+.step .pick::after{content:"";position:absolute;inset:0}.step .pick:focus-visible::after{outline:2px solid var(--cyan);border-radius:9px}.step .item a{position:relative;z-index:1}
+</style>
+<main>
+<header><div><div class="eyebrow">INDUSTRIAL SECURITY / CASE STUDIES</div><h1>OT Campaign Navigator</h1></div></header>
+<nav id="cards" class="cards" aria-label="Campaigns"></nav>
+<section class="panel" aria-labelledby="title"><div id="detail"></div></section>
+<section class="panel" aria-labelledby="sequence-title"><div class="bar"><div><strong id="sequence-title"></strong> <small>· Left to right</small></div><div><button class="btn" id="prev">Previous</button> <button class="btn" id="next">Next</button> <button class="btn" id="replay">Replay</button></div></div><div class="sequence" id="sequence"></div><p class="status" id="status" aria-live="polite"></p></section>
+<section class="panel" aria-labelledby="coverage-title"><h3 id="coverage-title">Our detection coverage</h3><p class="muted">Mapped to our OT Detection Catalog roadmap. These detections are proposed and require implementation and validation against site telemetry. Select a timeline step to see its mappings.</p><div class="tool-grid" id="coverage"></div></section>
+<section class="panel" aria-labelledby="tools-title"><h3 id="tools-title">Tools and malware</h3><div class="tool-grid" id="tools"></div></section>
+</main>
+<script>
+const campaigns = [
+['C0066','2026','July 2026','US Water Utility PLC Attacks','Minnesota and other US states','Water and wastewater','Unattributed (reported Iran links)','Internet-exposed MicroLogix controllers were accessed through cellular gateways. Logic and settings were changed, and some facilities shifted to manual operation.',
+'T0883~Internet Accessible Device~Publicly reachable PLCs through cellular gateways|T1694.001~Default Credentials~Factory credentials accepted|T0889~Modify Program~PLC logic altered|T0836~Modify Parameter~Controller IP changed|T0892~Change Credential~PLC password changed|!T0829~Loss of View~Remote visibility lost;T0827~Loss of Control~Remote equipment control lost;T0813~Denial of Control~Control interrupted;T0826~Loss of Availability~Some operations interrupted',
+['Cellular gateways were the access path. MicroLogix PLCs were the targets.'],['No named malware framework is listed in the campaign record.']],
+['C0063','2025','March to December 2025','Poland Energy Sector Wiper Attack','Poland','Wind, solar and CHP','Disputed attribution','The attackers disrupted communications between energy sites and their distribution operator. Generation continued.',
+'T0822~External Remote Services~Edge devices breached|T0846~Remote System Discovery~Hosts discovered;T0840~Network Connection Enumeration~HMI connections enumerated;T0888~Remote System Information Discovery~Remote host details collected|T1701.001~PowerShell~Administrative access and credential collection activity|!T0882~Theft of Operational Information~Operational information collected|T0885~Commonly Used Port~Firewall policy changed|T0886~Remote Services~OT devices reached remotely;T0823~Graphical User Interface~Remote graphical sessions used|T1694.001~Default Credentials~Factory accounts used;T0859~Valid Accounts~Existing accounts used|T0852~Screen Capture~Screens captured|T1693.001~System Firmware~RTU firmware corrupted;T0816~Device Restart/Shutdown~RTUs rebooted repeatedly|T0809~Data Destruction~Device and HMI data wiped;T1701.003~Unix Shell~RTU files deleted|!T0827~Loss of Control~Operator control disrupted;T0829~Loss of View~Site visibility lost',
+['PowerShell and PsExec supported administration and discovery.','SSH, RDP and SMB provided remote access. NirCmd captured screens.'],['DynoWiper destroyed data as part of the disruptive phase.']],
+['C0041','2024','January 2024','FrostyGoop District Heating Attack','Ukraine','District heating','Unattributed','ENCO controller manipulation disrupted district heating. Firmware was also downgraded.',
+'T0836~Modify Parameter~Controller parameters changed over Modbus|T1693.001~System Firmware~Firmware downgraded|!T0829~Loss of View~Monitoring visibility reduced;T0826~Loss of Availability~Heating service interrupted',
+['Modbus was the control protocol. ENCO controllers were the targets.'],['FrostyGoop (S1165) manipulated controllers.','A ReGeorg variant provided web shell persistence.']],
+['C0031','2023','November 2023','Unitronics PLC Defacement','US and other countries','Water, energy, food and beverage, healthcare','CyberAv3ngers','Internet-exposed Unitronics PLC/HMIs were accessed with factory credentials and defaced.',
+'T0883~Internet Accessible Device~PLC/HMIs reachable over the internet|T1694.001~Default Credentials~Factory credentials accepted|T0814~Denial of Service~Defacement disrupted operations|!T0829~Loss of View~HMI visibility lost;T0826~Loss of Availability~PLC/HMI unavailable;T0828~Loss of Productivity and Revenue~Operations disrupted',
+['Unitronics Vision PLC/HMIs were targets. Cellular modems were part of the reported exposure.'],['No named malware framework is listed in the campaign record.']],
+['C0034','2022','June to October 2022','Ukraine Substation Attack (2022)','Ukraine','Electric power','Sandworm Team','Attackers abused existing MicroSCADA tooling to send unauthorized commands from a SCADA server.',
+'T0895~Autorun Image~Image mounted through the hypervisor|T1701.004~Visual Basic~Script invoked existing SCADA tooling|T0894~System Binary Proxy Execution~Legitimate MicroSCADA binary executed attacker instructions|T1692.001~Command Message~Unauthorized substation commands sent',
+['MicroSCADA SCIL tooling issued commands. Windows scripting supported execution.'],['Neo-REGEORG provided web shell access. CaddyWiper was used in the broader campaign.']],
+['C0030','2017','June to August 2017','Triton Safety Instrumented System Attack','Middle East','Petrochemical','TEMP.Veles','The attackers reached a Triconex safety controller. A safety trip exposed the intrusion and interrupted plant operations.',
+'T0886~Remote Services~RDP jump box used|T0859~Valid Accounts~Existing credentials used;T0830~Adversary-in-the-Middle~Login verification redirected|T0867~Lateral Tool Transfer~Tool transfer attempted|T1701.001~PowerShell~PowerShell tooling executed|T0843.003~Program Append~Safety logic altered|T1692.001~Command Message~Unauthorized safety controller messages sent|T0872~Indicator Removal on Host~Malicious program overwritten after failure|!T0828~Loss of Productivity and Revenue~Safety trip interrupted plant operations',
+['RDP and PowerShell supported access and execution. Mimikatz and cryptcat were also reported.'],['TRITON (S1009) targeted Triconex safety systems. WMImplant supported post-compromise activity.']],
+['C0025','2016','December 2016','Ukraine Power Outage (2016)','Kyiv, Ukraine','Electric power','Sandworm Team','The attackers moved through connected systems and used Industroyer to disrupt a transmission substation.',
+'T0859~Valid Accounts~Existing accounts used across connected systems|T0886~Remote Services~Pivot systems reached through SQL services|T1701.004~Visual Basic~Windows scripting used|T0867~Lateral Tool Transfer~Payloads moved across hosts|T0849~Masquerading~Payload files renamed',
+['VPN, MS-SQL and Windows scripting supported movement and execution. Mimikatz was reported for credential access.'],['Industroyer (S0604) targeted substation equipment. A trojanized Notepad supported persistence.']],
+['C0028','2015','December 2015 to January 2016','Ukraine Power Outage (2015)','Western Ukraine','Electric power','Sandworm Team','Attackers operated breakers from compromised HMI workstations and impaired recovery. Power was interrupted for about six hours.',
+'T0822~External Remote Services~Control network VPN accessed|T0859~Valid Accounts~Existing accounts used to reach HMIs|T0846~Remote System Discovery~OT assets discovered|T0884~Connection Proxy~Internal proxy established;T0885~Commonly Used Port~Command channel used common port|T0867~Lateral Tool Transfer~Tools moved into the control network|T0886~Remote Services~Helpdesk remote control used;T0823~Graphical User Interface~Breakers operated from HMI|T1692.001~Command Message~Unauthorized breaker commands sent|T1693.001~System Firmware~Converter firmware overwritten;T1695.001~Serial COM~Serial communications blocked;T1691.001~Command Message~Control and reporting interrupted|T0816~Device Restart/Shutdown~Servers shut down;T0814~Denial of Service~Call center overwhelmed|!T0831~Manipulation of Control~Breakers opened;T0826~Loss of Availability~Power interrupted;T0827~Loss of Control~Manual recovery required;T0813~Denial of Control~Recovery equipment disabled;T0828~Loss of Productivity and Revenue~Outage disrupted business',
+['VPN, helpdesk remote control and operator HMI software supported access and breaker operations.'],['BlackEnergy (S0089) and KillDisk (S0607) are listed for the campaign.']],
+['C0020','2000','February to April 2000','Maroochy Water Services Breach','Queensland, Australia','Wastewater','Former contractor employee','An attacker used engineering equipment and radio access to send false commands and suppress alarms. About 800,000 liters of sewage were released.',
+'T0864~Transient Cyber Asset~Engineering laptop used|T0860~Wireless Compromise~Radio network accessed;T0822~External Remote Services~Remote radio access used|T0848~Rogue Master~Pump stations received rogue master traffic|T1692.001~Command Message~False commands sent;T1692.002~Reporting Message~False status data sent|T0836~Modify Parameter~Pump station settings changed|T0838~Modify Alarm Settings~Alarm settings changed;T0878~Alarm Suppression~Alarm reporting suppressed|!T0813~Denial of Control~Engineer control disrupted;T0815~Denial of View~Engineer monitoring disrupted|!T0879~Damage to Property~Sewage released',
+['Engineering laptop, proprietary PDS engineering software and two-way radio enabled access to pump stations.'],['No named malware framework is listed in the campaign record.']]
+].map(([id,year,date,title,region,sector,actor,summary,chain,tools,malware])=>({id,year,date,title,region,sector,actor,summary,tools,malware,steps:chain.split('|').map(s=>({outcome:s.startsWith('!'),items:s.replace(/^!/,'').split(';').map(t=>t.split('~'))}))}));
+
+const coverageByTechnique = {
+  "T0883": [
+    [
+      "OT-DC-010",
+      "Internet exposure of an OT management or control service",
+      "Approved exposure assessment results, firewall/NAT configuration and OT inventory",
+      true
+    ]
+  ],
+  "T0859": [
+    [
+      "LS-OT-T0859-D01",
+      "First-time or rare OT asset access",
+      "HMI Engineering Workstation SCADA",
+      false
+    ],
+    [
+      "LS-OT-T0859-D02",
+      "Access outside a normal work window",
+      "HMI Engineering Workstation SCADA",
+      false
+    ],
+    [
+      "LS-OT-T0859-D03",
+      "Unexpected source or access path",
+      "HMI Jump Host Engineering Workstation VPN Gateway Network",
+      false
+    ],
+    [
+      "LS-OT-T0859-D04",
+      "One identity on multiple OT assets",
+      "HMI Engineering Workstation SCADA",
+      false
+    ],
+    [
+      "LS-OT-T0859-D05",
+      "Service account used interactively",
+      "Historian Engineering Workstation Server",
+      false
+    ],
+    [
+      "LS-OT-T0859-D06",
+      "Dormant or vendor account becomes active",
+      "Engineering Workstation HMI",
+      false
+    ],
+    [
+      "LS-OT-T0859-D07",
+      "Failures, then success and OT access",
+      "HMI Engineering Workstation",
+      false
+    ],
+    [
+      "LS-OT-T0859-D08",
+      "Unexpected privileged session",
+      "Engineering Workstation PLC HMI",
+      false
+    ],
+    [
+      "LS-OT-T0859-D09",
+      "Rapid lateral movement with valid accounts",
+      "VPN Gateway Jump Host Engineering Workstation HMI Network",
+      false
+    ],
+    [
+      "LS-OT-T0859-D10",
+      "Login followed by an engineering change",
+      "Engineering Workstation PLC RTU IED",
+      false
+    ],
+    [
+      "OT-DC-004",
+      "Dormant or shared OT account used outside authorized context",
+      "Authentication, IAM/PAM and account inventory",
+      false
+    ]
+  ],
+  "T0892": [
+    [
+      "LS-OT-T0892-D01",
+      "Device credential changed without approval",
+      "HMI PLC SCADA",
+      false
+    ],
+    [
+      "LS-OT-T0892-D02",
+      "Unexpected actor changes a sensitive credential",
+      "HMI PLC SCADA",
+      false
+    ]
+  ],
+  "T1694.001": [
+    [
+      "LS-OT-T1694-D01",
+      "Default credential used from an unexpected source",
+      "PLC HMI SCADA",
+      false
+    ],
+    [
+      "LS-OT-T1694-D02",
+      "Default account used after commissioning",
+      "PLC HMI SCADA",
+      false
+    ],
+    [
+      "OT-DC-076",
+      "Confirmed use of manufacturer default credentials",
+      "Device authentication/configuration audit and account inventory",
+      false
+    ]
+  ],
+  "T0886": [
+    [
+      "OT-DC-075",
+      "Anonymous or first-seen access to an OT management service",
+      "Application authentication/session and device inventory",
+      true
+    ],
+    [
+      "OT-DC-054",
+      "Unapproved remote-management tool installation or first use",
+      "Endpoint install/process/service, proxy/DNS and remote-tool audit",
+      true
+    ],
+    [
+      "LS-OT-T0886-D01",
+      "Remote session over an unapproved path",
+      "Jump Host Engineering Workstation HMI Server",
+      false
+    ],
+    [
+      "LS-OT-T0886-D02",
+      "Remote access outside the account role or window",
+      "Jump Host Engineering Workstation HMI Server",
+      false
+    ],
+    [
+      "LS-OT-T0886-D03",
+      "Remote session followed by an unapproved engineering action",
+      "Jump Host Engineering Workstation HMI Server",
+      false
+    ],
+    [
+      "OT-DC-002",
+      "Internal remote service access outside approved host pairing",
+      "Firewall, RDP/SSH/VNC session and endpoint audit",
+      false
+    ],
+    [
+      "OT-DC-005",
+      "Unapproved IT–DMZ–OT conduit or gateway bypass",
+      "Firewall/flow, topology and NAT/proxy inventory",
+      true
+    ]
+  ],
+  "T0872": [
+    [
+      "OT-DC-060",
+      "Security or OT application logs cleared or tampered with",
+      "Windows security/system, OT application/database and SIEM audit",
+      false
+    ]
+  ],
+  "T0846": [
+    [
+      "LS-OT-T0846-D01",
+      "One source contacts many devices",
+      "Network Engineering Workstation",
+      false
+    ],
+    [
+      "LS-OT-T0846-D02",
+      "One source probes many ports",
+      "Network Engineering Workstation",
+      false
+    ],
+    [
+      "LS-OT-T0846-D03",
+      "Discovery from an unexpected source",
+      "Network Engineering Workstation",
+      false
+    ],
+    [
+      "LS-OT-T0846-D04",
+      "Unexpected broadcast or multicast discovery",
+      "Network Engineering Workstation",
+      false
+    ],
+    [
+      "OT-DC-066",
+      "Repeated blocked access or perimeter reconnaissance",
+      "Firewall/WAF/web audit",
+      true
+    ],
+    [
+      "OT-DC-069",
+      "Domain, share or OT-host discovery from an unexpected account",
+      "Directory/service-query, file-server, endpoint and authentication audit",
+      true
+    ]
+  ],
+  "T0888": [
+    [
+      "LS-OT-T0888-D01",
+      "Device identity queried by an unapproved source",
+      "PLC RTU IED Network",
+      false
+    ],
+    [
+      "LS-OT-T0888-D02",
+      "Device identity collection across many OT assets",
+      "PLC RTU IED Network",
+      false
+    ],
+    [
+      "OT-DC-015",
+      "Controller identity or diagnostic enumeration",
+      "Passive S7/vendor decoder or engineering audit",
+      false
+    ]
+  ],
+  "T0822": [
+    [
+      "OT-DC-001",
+      "External remote access outside authorized scope",
+      "VPN/PAM/jump and target authentication",
+      false
+    ]
+  ],
+  "T0860": [
+    [
+      "OT-DC-011",
+      "Unauthorized wireless or out-of-band OT access",
+      "Wireless controller, industrial gateway/modem audit, switch/NAC and inventory",
+      true
+    ]
+  ],
+  "T0830": [
+    [
+      "LS-OT-T0830-D01",
+      "OT address mapping conflicts with the approved network",
+      "Network Engineering Workstation Jump Host Router / Switch / Firewall",
+      false
+    ],
+    [
+      "LS-OT-T0830-D03",
+      "Unexpected forwarding or interception appears on an OT path",
+      "Network Engineering Workstation Jump Host Router / Switch / Firewall",
+      false
+    ],
+    [
+      "LS-OT-T0830-D06",
+      "Wire command disagrees with trusted endpoint evidence",
+      "Network Engineering Workstation Jump Host Router / Switch / Firewall",
+      false
+    ],
+    [
+      "OT-DC-041",
+      "OPC UA certificate validation bypass or unauthorized trust change",
+      "OPC UA application security audit and trust-list/configuration history",
+      true
+    ]
+  ],
+  "T0884": [
+    [
+      "LS-OT-T0884-D01",
+      "Unapproved relay or port-forward starts",
+      "Engineering Workstation Jump Host Server Router / Switch / Firewall",
+      false
+    ],
+    [
+      "LS-OT-T0884-D02",
+      "Traffic crosses an unapproved intermediary",
+      "Engineering Workstation Jump Host Server Router / Switch / Firewall",
+      false
+    ]
+  ],
+  "T0848": [
+    [
+      "OT-DC-008",
+      "Engineering or control protocol initiated by an unapproved host",
+      "Passive protocol decoder and asset inventory",
+      true
+    ],
+    [
+      "OT-DC-079",
+      "Unapproved CIP connection establishment",
+      "Passive CIP decoder and controller configuration",
+      true
+    ],
+    [
+      "LS-OT-T0848-D01",
+      "New or unapproved master",
+      "Network PLC RTU IED SCADA",
+      false
+    ],
+    [
+      "LS-OT-T0848-D02",
+      "Unknown device on a control path",
+      "Network PLC RTU IED SCADA",
+      false
+    ],
+    [
+      "LS-OT-T0848-D03",
+      "Device uses an unapproved control role",
+      "Network PLC RTU IED SCADA",
+      false
+    ],
+    [
+      "LS-OT-T0848-D04",
+      "Master identity from an unexpected device",
+      "Network PLC RTU IED SCADA",
+      false
+    ],
+    [
+      "LS-OT-T0848-D05",
+      "Unapproved master reaches several controllers",
+      "Network PLC RTU IED SCADA",
+      false
+    ],
+    [
+      "LS-OT-T0848-D06",
+      "Unapproved master changes the process",
+      "Network PLC RTU IED SCADA Historian",
+      false
+    ]
+  ],
+  "T0878": [
+    [
+      "OT-DC-024",
+      "Unapproved suppression of reporting or alarms",
+      "Protocol decoder, SCADA/SIS alarm configuration and reporting audit",
+      false
+    ],
+    [
+      "LS-OT-T0878-D03",
+      "Alarm disabled or hidden",
+      "HMI SCADA PLC",
+      false
+    ],
+    [
+      "LS-OT-T0878-D05",
+      "Many alarms acknowledged or hidden",
+      "HMI SCADA PLC",
+      false
+    ]
+  ],
+  "T0882": [
+    [
+      "OT-DC-059",
+      "Sensitive engineering data staged or transferred without approval",
+      "File access/DLP, process, proxy/flow and transfer-server audit",
+      true
+    ]
+  ],
+  "T0867": [
+    [
+      "OT-DC-081",
+      "Unapproved file placement on an OT controller or gateway",
+      "Device file-transfer audit, approved passive decoder and package repository",
+      true
+    ],
+    [
+      "OT-DC-038",
+      "Unapproved Windows patch, software or engineering file deployment",
+      "Patch/AV management, endpoint process/file/install and file-server audit",
+      true
+    ]
+  ],
+  "T0836": [
+    [
+      "LS-OT-T0836-D01",
+      "Important process setting changed",
+      "PLC SCADA Engineering Workstation Network",
+      false
+    ],
+    [
+      "LS-OT-T0836-D02",
+      "Setting outside its allowed range",
+      "PLC SCADA Engineering Workstation Network",
+      false
+    ],
+    [
+      "LS-OT-T0836-D03",
+      "Setting changes too much or too often",
+      "PLC SCADA Engineering Workstation Network",
+      false
+    ],
+    [
+      "LS-OT-T0836-D04",
+      "Setting changed at the wrong time",
+      "See catalog record",
+      false
+    ],
+    [
+      "LS-OT-T0836-D05",
+      "Many sensitive settings changed quickly",
+      "PLC SCADA Engineering Workstation Network",
+      false
+    ],
+    [
+      "LS-OT-T0836-D06",
+      "Setting change followed by a process problem",
+      "PLC SCADA Engineering Workstation Network Historian",
+      false
+    ],
+    [
+      "OT-DC-045",
+      "Setpoint outside approved range or rate of change",
+      "HMI/controller write audit, register/tag map and mode context",
+      false
+    ]
+  ],
+  "T0889": [
+    [
+      "OT-DC-033",
+      "Controller logic differs from an approved reference",
+      "Approved offline program comparisons, controller/project audit and version repository",
+      false
+    ]
+  ],
+  "T0831": [
+    [
+      "LS-OT-T0831-D01",
+      "Unapproved control action changes the process",
+      "PLC RTU HMI SCADA",
+      false
+    ],
+    [
+      "LS-OT-T0831-D02",
+      "Attributable sequence manipulates physical control",
+      "PLC RTU HMI SCADA",
+      false
+    ]
+  ],
+  "T1692.001": [
+    [
+      "LS-OT-T1692.001-D01",
+      "Write from an unexpected source",
+      "Network PLC RTU IED SCADA Engineering Workstation",
+      false
+    ],
+    [
+      "LS-OT-T1692.001-D02",
+      "Command function outside the allowed list",
+      "Network PLC RTU IED SCADA Engineering Workstation",
+      false
+    ],
+    [
+      "LS-OT-T1692.001-D03",
+      "Write to an important object",
+      "Network PLC RTU IED SCADA Engineering Workstation",
+      false
+    ],
+    [
+      "OT-DC-019",
+      "Unauthorized Modbus write to mapped control points",
+      "Passive Modbus decoder",
+      false
+    ],
+    [
+      "OT-DC-020",
+      "Modbus communication restart or listen-only request",
+      "Passive Modbus decoder plus gateway/device audit",
+      false
+    ],
+    [
+      "OT-DC-022",
+      "Unauthorized DNP3 control-point operation",
+      "Passive DNP3 decoder and SCADA switching audit",
+      false
+    ],
+    [
+      "OT-DC-025",
+      "Unauthorized IEC-104 control command",
+      "Passive IEC-104 and control-center audit",
+      false
+    ],
+    [
+      "OT-DC-026",
+      "Unexpected command fan-out across process areas or sites",
+      "SCADA command audit and passive protocol",
+      false
+    ],
+    [
+      "OT-DC-027",
+      "Unauthorized MMS or OPC UA control write or method call",
+      "MMS passive decoder, OPC UA server audit and identity/session records",
+      false
+    ],
+    [
+      "OT-DC-028",
+      "Unauthorized CIP or BACnet configuration/control write",
+      "Passive CIP/BACnet and device audit",
+      false
+    ],
+    [
+      "OT-DC-029",
+      "Unapproved BACnet restart or communications-disable request",
+      "Passive BACnet and device audit",
+      false
+    ],
+    [
+      "OT-DC-030",
+      "Unapproved MQTT control publication or retained-command change",
+      "MQTT broker audit and passive visibility where readable",
+      false
+    ],
+    [
+      "OT-DC-042",
+      "Unauthorized write or control action directed at SIS",
+      "Passive safety protocol and SIS engineering audit",
+      false
+    ],
+    [
+      "OT-DC-077",
+      "Unauthorized OT web-management control action after login",
+      "Device web/application audit, session/authentication and approved API/endpoint map",
+      false
+    ],
+    [
+      "OT-DC-078",
+      "Unauthorized S7 variable write to a protected address",
+      "Passive S7 decoder and engineering audit",
+      false
+    ],
+    [
+      "OT-DC-080",
+      "Control command outside approved HMI-to-controller pairing",
+      "Passive control-protocol and SCADA audit",
+      false
+    ],
+    [
+      "OT-DC-072",
+      "Clock drift or unauthorized time-source change",
+      "Existing NTP/PTP/device/system time audit and passive protocol",
+      true
+    ]
+  ],
+  "T0838": [
+    [
+      "LS-OT-T0838-D01",
+      "Alarm configuration changed without approval (title inferred from supplied logic)",
+      "HMI SCADA Engineering Workstation",
+      false
+    ],
+    [
+      "LS-OT-T0838-D03",
+      "Unapproved setting change prevents an expected alarm",
+      "HMI SCADA Engineering Workstation",
+      false
+    ],
+    [
+      "OT-DC-037",
+      "Alarm threshold or alarm-routing configuration changed without approval",
+      "SCADA/SIS alarm audit and historian",
+      false
+    ]
+  ],
+  "T1692.002": [
+    [
+      "OT-DC-031",
+      "Suspected reporting-message spoofing or replay",
+      "Passive GOOSE/DNP3 or other reporting decoder plus IED/broker configuration",
+      false
+    ],
+    [
+      "OT-DC-050",
+      "Frozen, stale or inconsistent process reporting",
+      "Historian, quality/source timestamps and existing approved independent feed",
+      true
+    ]
+  ],
+  "T0816": [
+    [
+      "LS-OT-T0816-D01",
+      "Restart or shutdown command",
+      "Network PLC RTU IED Engineering Workstation",
+      false
+    ],
+    [
+      "LS-OT-T0816-D02",
+      "Device restart or shutdown reported",
+      "Network PLC RTU IED Engineering Workstation",
+      false
+    ],
+    [
+      "LS-OT-T0816-D04",
+      "Restart command from an unexpected source",
+      "Network PLC RTU IED Engineering Workstation",
+      false
+    ],
+    [
+      "OT-DC-023",
+      "Unapproved DNP3 outstation restart",
+      "DNP3 passive decoder and outstation audit",
+      false
+    ]
+  ],
+  "T0809": [
+    [
+      "OT-DC-058",
+      "OT host file encryption or destructive file operations",
+      "EDR/file/process, storage and backup audit",
+      true
+    ]
+  ],
+  "T0814": [
+    [
+      "OT-DC-065",
+      "Network volume, connection rate or service-exhaustion anomaly",
+      "Flow/firewall, service/LB and resource metrics",
+      true
+    ]
+  ]
+};
+
+const get = id => document.getElementById(id);
+const campaignURL = id => 'https://attack.mitre.org/campaigns/' + id + '/';
+const techniqueURL = id => 'https://attack.mitre.org/techniques/' + id.replace('.', '/') + '/';
+const link = (url,label) => `<a href="${url}" target="_blank" rel="noopener">${label}</a>`;
+let selected = 0, current = 0, timer = null;
+const campaign = () => campaigns[selected];
+const limit = () => campaign().steps.length - 1;
+function stop(){clearInterval(timer);timer=null;get('replay').textContent='Replay';}
+function renderCampaign(){
+  const c=campaign();
+  get('cards').innerHTML=campaigns.map(x=>`<button class="card" data-id="${x.id}" aria-pressed="${x===c}"><span class="bar muted"><span>${x.id}</span><span>${x.year}</span></span><strong>${x.title}</strong><small>${x.sector} · ${x.region}</small><span class="badge">${x.steps.length}-step attack</span></button>`).join('');
+  get('detail').innerHTML=`<p class="eyebrow">${c.id} · ${c.date.toUpperCase()}</p><h2 id="title">${c.title}</h2><div class="meta"><span>Region <strong>${c.region}</strong></span><span>Sector <strong>${c.sector}</strong></span><span>Attributed to <strong>${c.actor}</strong></span>${link(campaignURL(c.id),'View '+c.id+' on MITRE ↗')}</div><p>${c.summary}</p>`;
+  const group=(title,items)=>`<div><strong>${title}</strong><ul>${items.map(item=>'<li>'+item+'</li>').join('')}</ul></div>`;
+  get('tools').innerHTML=group('Legitimate tools and access infrastructure',c.tools)+group('Malware and attacker tooling',c.malware);
+  get('sequence-title').textContent=`Attack sequence (${c.steps.length} steps)`;
+  get('sequence').innerHTML=c.steps.map((s,i)=>`<article data-stage="${i}" class="step ${s.outcome?'outcome':''}"><button class="pick" data-step="${i}" aria-label="Go to step ${i+1}"><span class="num">${i+1}</span>${s.outcome?'Outcome':''}</button><div class="items">${s.items.map(([id,name,desc])=>`<div class="item">${link(techniqueURL(id),id)}<b>${name}</b><span class="muted">${desc}</span></div>`).join('')}</div></article>`).join('');
+  renderStep();
+}
+function renderStep(scroll=false){
+  const c=campaign(), max=limit();
+  Array.from(get('sequence').children).forEach((el,i)=>{
+    el.classList.toggle('active',i===current);
+    el.classList.toggle('future',i>current);
+    el.querySelector('button').setAttribute('aria-current',i===current?'step':'false');
+  });
+  get('prev').disabled=current===0;get('next').disabled=current===max;
+  get('status').textContent=`Step ${current+1} of ${c.steps.length}`;
+  get('coverage-title').textContent = 'Our detection coverage · Step ' + (current + 1);
+  get('coverage').innerHTML = c.steps[current].items.map(([id, name]) => {
+    const records = coverageByTechnique[id] ?? [];
+    const content = records.length ? '<ul>' + records.map(([key,title,sources,conditional]) =>
+      '<li><strong>' + key + '</strong> · ' + title + (conditional ? ' <em>(conditional mapping)</em>' : '') + '<br><small>Telemetry sources · ' + sources + '</small></li>'
+    ).join('') + '</ul>' : '<p class="muted">No mapped detection in our catalog. Coverage gap to review.</p>';
+    return '<div><strong>' + id + ' · ' + name + '</strong>' + content + '</div>';
+  }).join('');
+  if(scroll){
+    const row=get('sequence'),el=row.children[current];
+    const bounds=row.getBoundingClientRect(), card=el.getBoundingClientRect();
+    if(card.left<bounds.left||card.right>bounds.right)row.scrollLeft+=card.left-bounds.left-3;
+  }
+}
+get('cards').addEventListener('click',e=>{
+  const card=e.target.closest('[data-id]');if(!card)return;
+  stop();selected=campaigns.findIndex(x=>x.id===card.dataset.id);current=0;
+  renderCampaign();get('sequence').scrollLeft=0;
+  get('cards').querySelector('[aria-pressed=true]').focus({preventScroll:true});
+});
+function move(step){stop();current=Math.max(0,Math.min(step,limit()));renderStep(true);}
+get('sequence').addEventListener('click',e=>{if(e.target.closest('a'))return;const card=e.target.closest('[data-stage]');if(card)move(Number(card.dataset.stage));});
+get('prev').onclick=()=>move(current-1);
+get('next').onclick=()=>move(current+1);
+get('replay').onclick=()=>{
+  if(timer!==null){stop();return;}
+  move(0);if(limit()===0)return;
+  get('replay').textContent='Pause';
+  timer=setInterval(()=>{current++;renderStep(true);if(current>=limit())stop();},1000);
+};
+renderCampaign();
+</script>
+</html>
