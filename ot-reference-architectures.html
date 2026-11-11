@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OT Reference Architectures | OT Detection Catalog</title>
+<style>
+body{margin:0;background:#f2f6fa;color:#173047;font:17px/1.6 system-ui,sans-serif}
+main{max-width:1120px;margin:2.5rem auto;padding:0 1.2rem 3rem}
+a{color:#175fa9} h1,h2,h3{line-height:1.2} section{margin:3rem 0}
+figure{margin:1.5rem 0;background:white;padding:1rem;border:1px solid #cad7e4}
+img{display:block;width:100%;height:auto} figcaption{margin-top:.75rem}
+dl{display:grid;grid-template-columns:minmax(10rem,1fr) 3fr;gap:.8rem 1.2rem}
+dt{font-weight:700}dd{margin:0} li{margin:.4rem 0}
+@media(max-width:600px){dl{display:block}dd{margin-bottom:.9rem}}
+</style>
+<main>
+<nav aria-label="Catalog navigation"><a href="index.html">Catalog home</a> · <a href="ot-detection-catalog-by-log-source.html">Detections by log source</a></nav>
+<h1>OT reference architectures and sensor placement</h1>
+<p>Two SANS ICS410 reference models help answer where supervisory systems run and where the SOC can obtain evidence. The diagrams show reference architecture, not an as-built network. Sensor and log placements below are proposed catalog guidance.</p>
+<nav aria-label="On this page"><a href="#distributed-scada">Distributed SCADA</a> · <a href="#plant-cells">Plant with multiple control cells</a> · <a href="#validation">Coverage validation</a></nav>
+<section id="distributed-scada">
+<h2>1. Distributed SCADA over a wide area</h2>
+<p>Separate enterprise and SCADA WANs connect business and control functions. Level 3 control centers and the ICS data center serve distributed sites. Larger sites can have site-wide supervision; smaller sites may start with local supervision at Level 2.</p>
+<figure>
+<a href="sans-ics410-distributed-scada.png"><img src="sans-ics410-distributed-scada.png" alt="SANS diagram of separate enterprise and SCADA WANs, Level 3 control centers and data center, and large and small ICS sites with segregated safety systems."></a>
+<figcaption>SANS ICS410 reference model for SCADA over a large geographic area. <a href="https://www.fortinet.com/content/dam/fortinet/assets/white-papers/wp-sans-enabling-nis-compliance-with-fortinet-ot.pdf">Published reference, Figure 11</a>. Select the diagram to open it at full size.</figcaption>
+</figure>
+<dl>
+<dt>Passive network visibility</dt><dd>Mirror approved links on the OT side of control-center WAN boundaries. Add passive capture at selected remote sites where station-local traffic never reaches the WAN. Validate both normal and failover paths where present.</dd>
+<dt>Logs and product feeds</dt><dd>Collect SCADA master application audit, operator authentication, WAN firewall and router events, and ICS DMZ access records. Add supported station logs and OT monitoring alerts, inventory and sensor health. Buffer at the site when approved and supported for intermittent links.</dd>
+<dt>What to validate</dt><dd>Trace a known control-center session to the intended station. Verify that a local station exchange is visible at the edge and that missing station telemetry raises a collection health alert.</dd>
+</dl>
+</section>
+<section id="plant-cells">
+<h2>2. Plant with site-wide supervision and multiple cells</h2>
+<p>Level 3 hosts shared supervisory services such as master servers, historians and site-wide HMIs. Level 2 serves a process, DCS, cell or line. The diagram distinguishes DMZ paths for OT-to-business data, business-to-OT data, cloud access and remote access.</p>
+<figure>
+<a href="sans-ics410-plant-cells.png"><img src="sans-ics410-plant-cells.png" alt="SANS plant diagram showing Level 4 business, four ICS DMZ functions, shared Level 3 services, four Level 2 to Level 0 cells and separate safety systems."></a>
+<figcaption>SANS ICS410 plant reference architecture, supplied diagram. See <a href="https://www.sans.org/blog/introduction-to-ics-security-part-2">SANS guidance on Purdue levels and enforcement boundaries</a>. Select the diagram to open it at full size.</figcaption>
+</figure>
+<dl>
+<dt>Passive network visibility</dt><dd>Observe traffic crossing the Level 3-to-cell boundary and add Level 2 capture for critical traffic that stays within a cell. Select TAP or SPAN points based on actual SCADA-to-controller paths and check capture loss.</dd>
+<dt>Logs and product feeds</dt><dd>Collect DMZ firewall, Zero Trust, broker and jump-host logs. Collect Level 3 SCADA, historian, engineering workstation and jump-host audit where present. For local Level 2 supervision and OEM devices, use supported application or device export; ingest OT monitoring alerts, inventory and health where available.</dd>
+<dt>What to validate</dt><dd>Trace a known approved remote session from the DMZ to its OT target, then correlate the application audit and available passive observations. Check that cell-local activity is visible even when the Level 3 sensor sees no matching flow.</dd>
+</dl>
+</section>
+<section id="validation">
+<h2>Coverage validation for both models</h2>
+<ul>
+<li><strong>Place SCADA by scope and actual deployment.</strong> A cell-local supervisory server can sit at Level 2; a site-wide or regional master can sit at Level 3. Collect its audit logs in the deployed zone and capture its controller communications where they traverse the network.</li>
+<li><strong>Preserve boundaries.</strong> Separate passive capture interfaces from management and export. Forward through approved zone collectors and DMZ paths; do not assume access to safety networks or add a route across a safety boundary for monitoring.</li>
+<li><strong>Resolve assets by site and zone.</strong> Correlate passive observations, product inventory and the approved asset register with stable identifiers where available. Track conflicts and blind spots; do not merge on IP alone.</li>
+<li><strong>Validate detection and telemetry health.</strong> Start with known behaviors and approved-path rules. Evaluate anomaly baselines against operating modes and use supervised models only with suitable labeled evidence. Track source status, parsing, clock quality, packet loss and collection outages.</li>
+</ul>
+<p>Use the <a href="ot-detection-catalog-by-log-source.html">catalog by log source</a> to map these collection points to detections, and the <a href="ot-production-roadmap.html">production roadmap</a> to record rollout gaps.</p>
+</section>
+</main>
+</html>
