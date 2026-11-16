@@ -13,7 +13,7 @@
 <nav id="cards" class="cards" aria-label="Campaigns"></nav>
 <section class="panel" aria-labelledby="title"><div id="detail"></div></section>
 <section class="panel" aria-labelledby="sequence-title"><div class="bar"><div><strong id="sequence-title"></strong> <small>· Left to right</small></div><div><button class="btn" id="prev">Previous</button> <button class="btn" id="next">Next</button> <button class="btn" id="replay">Replay</button></div></div><div class="sequence" id="sequence"></div><p class="status" id="status" aria-live="polite"></p></section>
-<section class="panel" aria-labelledby="coverage-title"><h3 id="coverage-title">Our detection coverage</h3><p class="muted">Mapped to our OT Detection Catalog roadmap. These detections are proposed and require implementation and validation against site telemetry. Select a timeline step to see its mappings.</p><div class="tool-grid" id="coverage"></div></section>
+<section class="panel" aria-labelledby="coverage-title"><h3 id="coverage-title">Our detection coverage</h3><p class="muted">Associations use the exact ATT&amp;CK technique or sub-technique in the catalog. Confirm each rule’s evidence requirements against the campaign behavior and site telemetry.</p><div class="tool-grid" id="coverage"></div></section>
 <section class="panel" aria-labelledby="tools-title"><h3 id="tools-title">Tools and malware</h3><div class="tool-grid" id="tools"></div></section>
 </main>
 <script>
@@ -694,10 +694,19 @@ function renderStep(scroll=false){
   get('coverage-title').textContent = 'Our detection coverage · Step ' + (current + 1);
   get('coverage').innerHTML = c.steps[current].items.map(([id, name]) => {
     const records = coverageByTechnique[id] ?? [];
-    const content = records.length ? '<ul>' + records.map(([key,title,sources,conditional]) =>
-      '<li><strong>' + key + '</strong> · ' + title + (conditional ? ' <em>(conditional mapping)</em>' : '') + '<br><small>Telemetry sources · ' + sources + '</small></li>'
-    ).join('') + '</ul>' : '<p class="muted">No mapped detection in our catalog. Coverage gap to review.</p>';
-    return '<div><strong>' + id + ' · ' + name + '</strong>' + content + '</div>';
+    const renderRecords = (heading, matches) => matches.length
+      ? '<h4>' + heading + '</h4><ul>' + matches.map(([key,title,sources,conditional]) =>
+        '<li><a href="ot-detection-catalog-by-log-source.html#' + key + '">' + key +
+        '</a> · ' + title + (conditional ? ' <em>(conditional mapping)</em>' : '') +
+        '<br><small>Telemetry sources · ' + sources + '</small></li>'
+      ).join('') + '</ul>'
+      : '';
+    const labshock = records.filter(([key]) => key.startsWith('LS-'));
+    const additional = records.filter(([key]) => key.startsWith('OT-DC-'));
+    const content = renderRecords('LabShock hypotheses', labshock) +
+      renderRecords('Additional Monitoring Capabilities', additional);
+    return '<div><strong>' + id + ' · ' + name + '</strong>' +
+      (content || '<p class="muted">No exact catalog association for this technique.</p>') + '</div>';
   }).join('');
   if(scroll){
     const row=get('sequence'),el=row.children[current];
