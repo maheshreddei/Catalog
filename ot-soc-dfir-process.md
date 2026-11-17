@@ -66,6 +66,30 @@ Gate B: If jointly explained and resolved, document evidence and residual concer
 
 Output: qualified event, shared initial assessment, evidence pointers and explicit disposition. “No observed impact” and “impact not observable” are different outcomes.
 
+### Attack progression and operational consequence assessment
+
+Use this assessment at Gate B and repeat during technical handling, incident response and recovery. Record several supported conditions where applicable. Urgency depends on current process state, potential consequences and evidence confidence.
+
+- Is sensitive industrial information being collected or transferred?
+- Does access extend toward the control environment or across additional assets?
+- Are privileges, credentials or persistence mechanisms changing?
+- Is the source enumerating controllers, control paths or process objects?
+- Are commands or engineering actions directed at field devices, alarms or safety functions?
+- Is there independent evidence of changed process behavior, lost visibility, lost control or physical harm?
+
+| Condition | Supporting evidence | Assessment and escalation |
+|---|---|---|
+| Unauthorized access or malicious execution | Authentication, remote session, process or file evidence | Establish identity, destination, scope and subsequent actions. |
+| Collection or loss of sensitive industrial information | Repository access, project readout and transfer records | Identify the information involved and whether transfer is independently evidenced. |
+| Loss of process visibility | Stale displays, telemetry quality and independent field readings | Ask operations which observations remain trustworthy and preserve reporting evidence. |
+| Loss of process control | Command results, controller state and operator feedback | Establish which control functions are affected and invoke the agreed operational escalation. |
+| Manipulation of operations | Accepted commands or engineering changes with independent process trends | Confirm the affected equipment and compare observed changes with approved work. |
+| Physical damage or safety concern | Operator observations, protective-system events and physical inspection | Activate facility emergency procedures through the responsible operational authority. |
+
+Record the site and time window, observed activity, affected asset/process, evidence IDs, confidence, alternative explanations, telemetry gaps, observed consequence, potential next consequence, decision owner and next review time. Link requests to native results, verified state changes and independent process feedback where available.
+
+Credible cyber evidence supports an expedited situation assessment for phase D. Immediate safety concerns require parallel facility action. An unexplained symptom requires a named owner, focused evidence collection and a scheduled reassessment.
+
 ## 4. C — Technical event handling
 
 Reference: section 4.2.3, C.1–C.7, printed pp. 30–34.
