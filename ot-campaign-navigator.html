@@ -701,9 +701,9 @@ function renderStep(scroll=false){
         '<br><small>Telemetry sources · ' + sources + '</small></li>'
       ).join('') + '</ul>'
       : '';
-    const labshock = records.filter(([key]) => key.startsWith('LS-'));
+    const reference = records.filter(([key]) => key.startsWith('LS-'));
     const additional = records.filter(([key]) => key.startsWith('OT-DC-'));
-    const content = renderRecords('LabShock hypotheses', labshock) +
+    const content = renderRecords('Reference hypotheses', reference) +
       renderRecords('Additional Monitoring Capabilities', additional);
     return '<div><strong>' + id + ' · ' + name + '</strong>' +
       (content || '<p class="muted">No exact catalog association for this technique.</p>') + '</div>';
